@@ -42,6 +42,20 @@ RUN rm -rf ./*
 # Request for /vitrina/assets/foo.js → /usr/share/nginx/html/vitrina/assets/foo.js
 COPY --from=builder /usr/src/app/dist ./vitrina
 
+RUN printf 'server {\n\
+    listen 3007;\n\
+    root /usr/share/nginx/html;\n\
+    location /vitrina/ {\n\
+        try_files $uri $uri/ /vitrina/index.html;\n\
+        add_header Cache-Control "no-cache";\n\
+    }\n\
+    location /vitrina/assets/ {\n\
+        add_header Cache-Control "public, max-age=31536000, immutable";\n\
+    }\n\
+    location / {\n\
+        try_files $uri $uri/ /vitrina/index.html;\n\
+    }\n\
+}\n' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 3007
 
